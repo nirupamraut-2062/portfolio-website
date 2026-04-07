@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Portfolio CMS — Full Stack</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d0f14;--surface:#161920;--surface2:#1e222c;--border:#2a2f3d;
+  --accent:#e8c97a;--accent2:#7b9fe8;--text:#e8eaf0;--muted:#7a8099;
+  --danger:#e87b7b;--success:#7be8b0;--radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* ═══════════════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════════════ */
+#login-screen{
+  position:fixed;inset:0;background:var(--bg);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(232,201,122,.04) 0%,transparent 60%),
+                   radial-gradient(ellipse at 80% 20%,rgba(123,159,232,.04) 0%,transparent 60%);
+}
+#login-screen.hidden{display:none;}
+.login-wrap{width:400px;max-width:94vw;}
+.login-logo{text-align:center;margin-bottom:36px;}
+.login-logo h1{font-family:'Playfair Display',serif;font-size:2rem;color:var(--accent);letter-spacing:.02em;}
+.login-logo p{color:var(--muted);font-size:.82rem;margin-top:5px;letter-spacing:.1em;text-transform:uppercase;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;}
+.login-card h2{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:6px;}
+.login-card .sub{color:var(--muted);font-size:.82rem;margin-bottom:28px;}
+.login-fg{margin-bottom:18px;}
+.login-fg label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em;}
+.login-fg input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:11px 14px;color:var(--text);
+  font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;
+}
+.login-fg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,201,122,.08);}
+.login-fg input.err{border-color:var(--danger);}
+.login-err{color:var(--danger);font-size:.78rem;margin-top:5px;display:none;}
+.login-err.show{display:block;}
+.btn-login{
+  width:100%;padding:12px;background:var(--accent);color:#0d0f14;
+  border:none;border-radius:8px;font-family:'DM Sans',sans-serif;
+  font-size:.9rem;font-weight:700;cursor:pointer;transition:all .18s;margin-top:6px;
+}
+.btn-login:hover{background:#f0d896;transform:translateY(-1px);}
+.btn-login:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.login-hint{margin-top:20px;padding:12px 14px;background:rgba(123,159,232,.07);border:1px solid rgba(123,159,232,.15);border-radius:8px;}
+.login-hint p{font-size:.74rem;color:var(--muted);line-height:1.6;}
+.login-hint code{background:var(--surface2);padding:1px 6px;border-radius:4px;color:var(--accent2);font-size:.72rem;}
+.role-tabs{display:flex;gap:3px;background:var(--surface2);padding:4px;border-radius:10px;margin-bottom:22px;}
+.role-tab{flex:1;padding:7px;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;
+  color:var(--muted);transition:all .18s;border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;text-align:center;}
+.role-tab.active{background:var(--surface);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+/* ═══════════════════════════════════════
+   ROLE BADGE IN TOPBAR
+═══════════════════════════════════════ */
+.role-pill{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
+  border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.04em;
+}
+.role-admin{background:rgba(232,201,122,.12);color:var(--accent);border:1px solid rgba(232,201,122,.25);}
+.role-viewer{background:rgba(123,159,232,.12);color:var(--accent2);border:1px solid rgba(123,159,232,.25);}
+.viewer-banner{
+  background:rgba(123,159,232,.06);border-bottom:1px solid rgba(123,159,232,.15);
+  padding:8px 28px;display:flex;align-items:center;gap:10px;
+  font-size:.78rem;color:var(--accent2);
+}
+.viewer-banner.hidden{display:none;}
+
+/* ── SIDEBAR ─────────────────────────────── */
+.sidebar{width:245px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:transform 0.3s;}
+.sidebar-logo{padding:24px 20px 18px;border-bottom:1px solid var(--border);}
+.sidebar-logo h1{font-family:'Playfair Display',serif;font-size:1.35rem;color:var(--accent);letter-spacing:.02em;}
+.sidebar-logo small{font-size:.68rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto;}
+.nav-group{padding:10px 16px 3px;font-size:.63rem;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-weight:700;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 20px;color:var(--muted);cursor:pointer;transition:all .18s;font-size:.87rem;font-weight:500;border-left:3px solid transparent;user-select:none;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--accent);background:rgba(232,201,122,.08);border-left-color:var(--accent);}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--accent);color:#0d0f14;font-size:.62rem;font-weight:800;padding:1px 7px;border-radius:20px;min-width:20px;text-align:center;}
+.sidebar-footer{padding:14px 16px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;color:#0d0f14;flex-shrink:0;}
+.user-name{font-size:.82rem;font-weight:600;color:var(--text);}
+.user-role{font-size:.68rem;color:var(--muted);}
+.logout-btn{margin-top:10px;width:100%;padding:7px;background:transparent;border:1px solid var(--border);border-radius:7px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.76rem;cursor:pointer;transition:all .16s;font-weight:600;}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+
+/* ── MAIN ────────────────────────────────── */
+.main{margin-left:245px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+.topbar{padding:14px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.topbar-title{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--text);}
+.db-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(123,232,176,.1);border:1px solid rgba(123,232,176,.25);color:var(--success);padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;}
+.db-dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:dbpulse 2s infinite;}
+@keyframes dbpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.topbar-actions{display:flex;gap:9px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;border:none;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#0d0f14;}
+.btn-primary:hover{background:#f0d896;transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted);}
+.btn-danger{background:rgba(232,123,123,.1);color:var(--danger);border:1px solid rgba(232,123,123,.2);}
+.btn-danger:hover{background:rgba(232,123,123,.2);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
+
+/* ── CONTENT ─────────────────────────────── */
+.content{padding:24px 28px;flex:1;}
+.section{display:none;animation:fadeIn .2s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── STATS GRID ──────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.06;}
+.stat-card.c1::after{background:var(--accent);}
+.stat-card.c2::after{background:var(--accent2);}
+.stat-card.c3::after{background:var(--success);}
+.stat-card.c4::after{background:var(--danger);}
+.stat-icon{font-size:1.4rem;margin-bottom:10px;}
+.stat-label{font-size:.71rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px;}
+.stat-value{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--text);}
+.stat-sub{font-size:.73rem;color:var(--success);margin-top:4px;font-weight:500;}
+
+/* ── TABLE ───────────────────────────────── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--text);}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.table-wrap table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--surface2);}
+th{padding:11px 16px;text-align:left;font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+td{padding:12px 16px;font-size:.84rem;border-top:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tbody tr{transition:background .12s;}
+tbody tr:hover td{background:rgba(255,255,255,.02);}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.02em;}
+.bp{background:rgba(123,232,176,.12);color:var(--success);}
+.bd{background:rgba(232,201,122,.12);color:var(--accent);}
+.bf{background:rgba(123,159,232,.12);color:var(--accent2);}
+.row-actions{display:flex;gap:5px;}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .14s;font-size:.8rem;}
+.icon-btn:hover{color:var(--text);border-color:var(--muted);background:var(--surface2);}
+.icon-btn.del:hover{color:var(--danger);border-color:var(--danger);}
+.icon-btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+.empty-row td{padding:36px;text-align:center;color:var(--muted);font-size:.85rem;}
+
+/* ── TABS ────────────────────────────────── */
+.tabs{display:flex;gap:3px;background:var(--surface2);padding:4px;border-radius:10px;width:fit-content;margin-bottom:20px;}
+.tab{padding:7px 18px;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .18s;border:none;background:transparent;font-family:'DM Sans',sans-serif;}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+/* ── MODAL ───────────────────────────────── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(5px);}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:660px;max-width:96vw;max-height:92vh;overflow-y:auto;animation:modalIn .22s ease;}
+@keyframes modalIn{from{transform:translateY(18px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:2;}
+.modal-head h3{font-family:'Playfair Display',serif;font-size:1.05rem;}
+.modal-close{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.modal-close:hover{color:var(--text);background:var(--surface2);}
+.modal-body{padding:22px;}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px;position:sticky;bottom:0;background:var(--surface);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.fg{margin-bottom:16px;}
+.fg.full{grid-column:1/-1;}
+label{display:block;font-size:.74rem;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.07em;}
+input,textarea,select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.87rem;outline:none;transition:border-color .2s;}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,201,122,.08);}
+textarea{resize:vertical;min-height:88px;line-height:1.5;}
+select option{background:var(--surface2);color:var(--text);}
+.upload-zone{border:2px dashed var(--border);border-radius:8px;padding:22px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(232,201,122,.04);}
+.upload-zone p{font-size:.84rem;color:var(--muted);margin-top:6px;}
+.upload-zone small{font-size:.72rem;color:var(--border);}
+.file-chip{margin-top:8px;display:inline-flex;align-items:center;gap:6px;background:rgba(232,201,122,.1);border:1px solid rgba(232,201,122,.2);color:var(--accent);padding:4px 10px;border-radius:6px;font-size:.74rem;font-weight:600;}
+
+/* ── ANALYTICS ───────────────────────────── */
+.a-grid{display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-top:22px;}
+.chart-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.chart-box h4{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:14px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.bar-label{font-size:.74rem;color:var(--muted);width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;}
+.bar-track{flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s ease;}
+.bar-val{font-size:.72rem;color:var(--accent);font-weight:700;width:36px;text-align:right;flex-shrink:0;}
+.src-item{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.src-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.src-label{font-size:.82rem;color:var(--muted);flex:1;}
+.src-val{font-size:.82rem;font-weight:700;}
+
+/* ── THEME ───────────────────────────────── */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:22px;}
+.theme-card{border:2px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .18s;}
+.theme-card:hover,.theme-card.sel{border-color:var(--accent);}
+.theme-card .tp{height:68px;display:flex;align-items:center;justify-content:center;}
+.theme-card .tn{padding:7px 12px;font-size:.75rem;font-weight:700;color:var(--muted);background:var(--surface2);}
+.theme-card.sel .tn{color:var(--accent);}
+.settings-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+
+/* ── PREVIEW ─────────────────────────────── */
+.prev-banner{background:linear-gradient(90deg,rgba(232,201,122,.08),rgba(123,159,232,.08));border:1px solid rgba(232,201,122,.18);border-radius:10px;padding:11px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.prev-info{display:flex;align-items:center;gap:9px;font-size:.83rem;color:var(--accent);font-weight:500;}
+.pdot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:dbpulse 1.5s infinite;}
+.port-header{text-align:center;padding:24px 0 18px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.port-header h2{font-family:'Playfair Display',serif;font-size:1.9rem;margin-bottom:6px;}
+.port-header p{color:var(--muted);font-size:.88rem;}
+.cat-filter{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;}
+.cat-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer;transition:all .18s;font-family:'DM Sans',sans-serif;}
+.cat-btn:hover,.cat-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(232,201,122,.06);}
+.port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.port-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer;}
+.port-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,.35);}
+.port-thumb{height:130px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;}
+.port-info{padding:13px;}
+.port-title{font-weight:700;font-size:.88rem;margin-bottom:3px;}
+.port-cat{font-size:.71rem;color:var(--muted);}
+.port-tags{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
+.ptag{font-size:.66rem;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);}
+
+/* ── API DOCS ────────────────────────────── */
+.api-intro{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:18px;}
+.api-intro code{background:var(--surface2);padding:2px 8px;border-radius:5px;color:var(--accent2);font-size:.82rem;}
+.ep-row{display:flex;align-items:flex-start;gap:13px;padding:11px 15px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;transition:border-color .15s;}
+.method{padding:3px 10px;border-radius:5px;font-size:.7rem;font-weight:800;min-width:58px;text-align:center;flex-shrink:0;}
+.m-get{background:rgba(123,232,176,.12);color:var(--success);}
+.m-post{background:rgba(232,201,122,.12);color:var(--accent);}
+.m-put{background:rgba(123,159,232,.12);color:var(--accent2);}
+.m-del{background:rgba(232,123,123,.12);color:var(--danger);}
+.ep-path{font-family:monospace;font-size:.8rem;color:var(--accent2);min-width:210px;flex-shrink:0;}
+.ep-desc{font-size:.8rem;color:var(--muted);}
+
+/* ── LOADING / SPINNER ───────────────────── */
+.loading{display:flex;align-items:center;gap:10px;padding:28px 16px;color:var(--muted);font-size:.84rem;}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .55s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── CONFIRM DIALOG ──────────────────────── */
+.confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px 28px;width:360px;text-align:center;animation:modalIn .2s ease;}
+.confirm-box h4{font-family:'Playfair Display',serif;margin-bottom:8px;font-size:1rem;}
+.confirm-box p{color:var(--muted);font-size:.84rem;margin-bottom:22px;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
+
+/* ── TOAST ───────────────────────────────── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:.83rem;box-shadow:0 6px 24px rgba(0,0,0,.45);z-index:9999;transform:translateY(64px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:9px;max-width:310px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.tdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.tdot.ok{background:var(--success);}
+.tdot.err{background:var(--danger);}
+.tdot.info{background:var(--accent2);}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <h1>Folio CMS</h1>
+      <p>Secure Admin Access</p>
+    </div>
+    <div class="login-card">
+      <h2>Sign in to continue</h2>
+      <p class="sub">Enter your credentials to access the dashboard.</p>
+
+      <!-- Role selector -->
+      <div class="role-tabs">
+        <button class="role-tab active" data-role="admin" onclick="selectLoginRole('admin',this)">🔑 Admin</button>
+        <button class="role-tab" data-role="viewer" onclick="selectLoginRole('viewer',this)">👁 Viewer</button>
+      </div>
+
+      <div class="login-fg">
+        <label>Username</label>
+        <input type="text" id="l-user" placeholder="Enter username" autocomplete="username"/>
+        <div class="login-err" id="l-err-user"></div>
+      </div>
+      <div class="login-fg">
+        <label>Password</label>
+        <input type="password" id="l-pass" placeholder="Enter password" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')doLogin()"/>
+        <div class="login-err" id="l-err"></div>
+      </div>
+      <button class="btn-login" id="login-btn" onclick="doLogin()">Sign In →</button>
+
+      <div class="login-hint" style="margin-top:20px;">
+        <p><strong style="color:var(--accent)">Demo credentials</strong></p>
+        <p style="margin-top:6px;">Admin — <code>admin</code> / <code>admin123</code></p>
+        <p>Viewer — <code>viewer</code> / <code>view123</code></p>
+        <p style="margin-top:6px;font-size:.7rem;color:#555">Viewer role: read-only. Cannot add, delete, or export.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h1>Folio CMS</h1>
+    <small id="sb-db-label">Admin Panel · IndexedDB</small>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">Content</div>
+    <div class="nav-item active" data-section="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-section="projects">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/></svg>
+      Projects
+      <span class="nav-badge" id="nb-projects">0</span>
+    </div>
+    <div class="nav-item" data-section="blog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Blog Entries
+      <span class="nav-badge" id="nb-blog">0</span>
+    </div>
+    <div class="nav-group">Insights</div>
+    <div class="nav-item" data-section="analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analytics
+    </div>
+    <div class="nav-group">Customize</div>
+    <div class="nav-item" data-section="theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41"/></svg>
+      Theme
+    </div>
+    <div class="nav-item" data-section="preview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Preview Portfolio
+    </div>
+    <div class="nav-item" data-section="api">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      API Reference
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar" id="av">JS</div>
+      <div>
+        <div class="user-name" id="uname">John Smith</div>
+        <div class="user-role" id="u-role-label">Administrator</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">⎋ Sign Out</button>
+  </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════════ MAIN -->
+<main class="main">
+  <!-- Viewer read-only banner -->
+  <div class="viewer-banner hidden" id="viewer-banner">
+    <span>👁</span>
+    <span><strong>Viewer mode</strong> — You can browse all content but cannot add, edit, delete, or export data. Contact an admin to request elevated access.</span>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="db-badge"><div class="db-dot"></div>IndexedDB Active</div>
+      <div class="role-pill" id="role-pill" style="display:none;"></div>
+    </div>
+    <div class="topbar-actions" id="topbar-actions">
+      <button class="btn btn-ghost" id="btn-export" onclick="exportData()">⬇ Export</button>
+      <button class="btn btn-ghost" onclick="navigate('preview')">👁 Preview</button>
+      <button class="btn btn-primary" id="btn-add-project" onclick="openProjectModal()">+ Add Project</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <section class="section active" id="s-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card c1"><div class="stat-icon">🗂</div><div class="stat-label">Projects</div><div class="stat-value" id="st-proj">0</div><div class="stat-sub" id="st-proj-sub">Loading…</div></div>
+        <div class="stat-card c2"><div class="stat-icon">✍️</div><div class="stat-label">Blog Posts</div><div class="stat-value" id="st-blog">0</div><div class="stat-sub" id="st-blog-sub">Loading…</div></div>
+        <div class="stat-card c3"><div class="stat-icon">👁</div><div class="stat-label">Total Views</div><div class="stat-value" id="st-views">0</div><div class="stat-sub">All content</div></div>
+        <div class="stat-card c4"><div class="stat-icon">📝</div><div class="stat-label">Drafts</div><div class="stat-value" id="st-drafts">0</div><div class="stat-sub">Pending review</div></div>
+      </div>
+      <div class="section-header">
+        <div class="section-title">Recent Projects</div>
+        <button class="btn btn-ghost" onclick="navigate('projects')" style="font-size:.78rem;padding:6px 12px;">View All →</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Added</th><th>Actions</th></tr></thead>
+        <tbody id="dash-tbody"></tbody></table>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="section" id="s-projects">
+      <div class="tabs" id="proj-tabs">
+        <button class="tab active" data-filter="all">All</button>
+        <button class="tab" data-filter="Published">Published</button>
+        <button class="tab" data-filter="Draft">Drafts</button>
+        <button class="tab" data-filter="Featured">Featured</button>
+      </div>
+      <div class="section-header">
+        <div class="section-title">Projects <span id="proj-count" style="color:var(--muted);font-size:.85rem;font-family:'DM Sans',sans-serif;font-weight:400;"></span></div>
+        <button class="btn btn-primary admin-only" onclick="openProjectModal()">+ Add Project</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Title</th><th>Category</th><th>Tags</th><th>Status</th><th>Views</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="proj-tbody"></tbody></table>
+      </div>
+    </section>
+
+    <!-- BLOG -->
+    <section class="section" id="s-blog">
+      <div class="section-header">
+        <div class="section-title">Blog Entries</div>
+        <button class="btn btn-primary admin-only" onclick="openBlogModal()">+ New Post</button>
+      </div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Views</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="blog-tbody"></tbody></table>
+      </div>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section class="section" id="s-analytics">
+      <div class="stats-grid">
+        <div class="stat-card c1"><div class="stat-icon">📊</div><div class="stat-label">Total Content</div><div class="stat-value" id="a-total">0</div></div>
+        <div class="stat-card c2"><div class="stat-icon">👁</div><div class="stat-label">Total Views</div><div class="stat-value" id="a-views">0</div></div>
+        <div class="stat-card c3"><div class="stat-icon">✅</div><div class="stat-label">Published</div><div class="stat-value" id="a-pub">0</div></div>
+        <div class="stat-card c4"><div class="stat-icon">📝</div><div class="stat-label">Drafts</div><div class="stat-value" id="a-draft">0</div></div>
+      </div>
+      <div class="a-grid">
+        <div class="chart-box"><h4>Top Projects by Views</h4><div id="a-proj-bars"></div></div>
+        <div class="chart-box"><h4>Traffic Sources (Simulated)</h4>
+          <div class="src-item"><div class="src-dot" style="background:#e8c97a"></div><div class="src-label">Direct</div><div class="src-val" style="color:#e8c97a">42%</div></div>
+          <div class="src-item"><div class="src-dot" style="background:#7b9fe8"></div><div class="src-label">Social Media</div><div class="src-val" style="color:#7b9fe8">31%</div></div>
+          <div class="src-item"><div class="src-dot" style="background:#7be8b0"></div><div class="src-label">Search</div><div class="src-val" style="color:#7be8b0">18%</div></div>
+          <div class="src-item"><div class="src-dot" style="background:#e87b7b"></div><div class="src-label">Referral</div><div class="src-val" style="color:#e87b7b">9%</div></div>
+        </div>
+      </div>
+      <div style="margin-top:18px;" class="a-grid">
+        <div class="chart-box"><h4>Top Blog Posts by Views</h4><div id="a-blog-bars"></div></div>
+        <div class="chart-box"><h4>Projects by Category</h4><div id="a-cats"></div></div>
+      </div>
+    </section>
+
+    <!-- THEME -->
+    <section class="section" id="s-theme">
+      <div class="section-title" style="margin-bottom:6px;">Theme Customization</div>
+      <p style="color:var(--muted);font-size:.84rem;margin-bottom:18px;">All settings persist in IndexedDB — your database in the browser.</p>
+      <div class="theme-grid">
+        <div class="theme-card sel" data-theme="Dark Gold"><div class="tp" style="background:linear-gradient(135deg,#0d0f14,#1e222c)"><div style="width:38px;height:5px;background:#e8c97a;border-radius:3px"></div></div><div class="tn">✦ Dark Gold</div></div>
+        <div class="theme-card" data-theme="Light Minimal"><div class="tp" style="background:linear-gradient(135deg,#f8f8f5,#efefea)"><div style="width:38px;height:5px;background:#1a1a1a;border-radius:3px"></div></div><div class="tn">Light Minimal</div></div>
+        <div class="theme-card" data-theme="Ocean Blue"><div class="tp" style="background:linear-gradient(135deg,#0a1628,#0f2040)"><div style="width:38px;height:5px;background:#4dabf7;border-radius:3px"></div></div><div class="tn">Ocean Blue</div></div>
+        <div class="theme-card" data-theme="Forest Green"><div class="tp" style="background:linear-gradient(135deg,#0d1a0f,#142018)"><div style="width:38px;height:5px;background:#74c69d;border-radius:3px"></div></div><div class="tn">Forest Green</div></div>
+        <div class="theme-card" data-theme="Rose Quartz"><div class="tp" style="background:linear-gradient(135deg,#1a0f0f,#200f14)"><div style="width:38px;height:5px;background:#f48fb1;border-radius:3px"></div></div><div class="tn">Rose Quartz</div></div>
+        <div class="theme-card" data-theme="Monochrome"><div class="tp" style="background:#111"><div style="width:38px;height:5px;background:#fff;border-radius:3px"></div></div><div class="tn">Monochrome</div></div>
+      </div>
+      <div class="settings-grid">
+        <div class="fg"><label>Owner Name</label><input id="th-name" type="text" placeholder="Your Name"/></div>
+        <div class="fg"><label>Bio / Tagline</label><input id="th-bio" type="text" placeholder="Designer · Available for freelance"/></div>
+        <div class="fg"><label>Font</label><select id="th-font"><option>Playfair Display</option><option>DM Sans</option><option>Space Mono</option><option>Georgia</option></select></div>
+        <div class="fg"><label>Layout</label><select id="th-layout"><option>Grid (3 col)</option><option>Masonry</option><option>List</option><option>Magazine</option></select></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="btn btn-primary admin-only" onclick="saveSettings()">💾 Save to Database</button>
+        <button class="btn btn-ghost admin-only" onclick="resetSettings()">↺ Reset Defaults</button>
+        <span class="viewer-only" style="font-size:.8rem;color:var(--muted);display:none;">🔒 Admin access required to save settings.</span>
+      </div>
+    </section>
+
+    <!-- PREVIEW -->
+    <section class="section" id="s-preview">
+      <div class="prev-banner">
+        <div class="prev-info"><div class="pdot"></div>Preview Mode — Public Portfolio</div>
+        <button class="btn btn-ghost admin-only" style="font-size:.76rem;padding:5px 12px;" onclick="exportData()">⬇ Export Data</button>
+      </div>
+      <div class="port-header">
+        <h2 id="prev-name">John Smith</h2>
+        <p id="prev-bio">Designer &amp; Creative Developer · Available for freelance</p>
+      </div>
+      <div class="cat-filter" id="prev-cats"></div>
+      <div class="port-grid" id="prev-grid"></div>
+    </section>
+
+    <!-- API DOCS -->
+    <section class="section" id="s-api">
+      <div class="api-intro">
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:8px;">Backend API Reference</div>
+        <p style="color:var(--muted);font-size:.83rem;line-height:1.6;">This CMS uses a <strong style="color:var(--accent)">browser-embedded backend</strong> — all data operations run through a JavaScript API layer backed by <code>IndexedDB</code>. The same interface mirrors a real REST API for production use.</p>
+        <p style="color:var(--muted);font-size:.83rem;margin-top:8px;">Base URL (REST server): <code>http://localhost:3001/api</code></p>
+      </div>
+      <div id="api-list"></div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ═══════════════════════════════════════════════ PROJECT MODAL -->
+<div class="overlay" id="ov-project">
+  <div class="modal">
+    <div class="modal-head"><h3 id="pm-title">Add New Project</h3><button class="modal-close" onclick="closeOverlay('ov-project')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="pm-id"/>
+      <div class="form-row">
+        <div class="fg"><label>Title *</label><input id="pm-name" placeholder="e.g. Brand Identity — Acme"/></div>
+        <div class="fg"><label>Category</label><select id="pm-cat"><option>Branding</option><option>Web Design</option><option>UI/UX</option><option>Web App</option><option>Animation</option><option>Photography</option><option>Motion</option></select></div>
+      </div>
+      <div class="fg full"><label>Description</label><textarea id="pm-desc" placeholder="Describe this project in detail…"></textarea></div>
+      <div class="form-row">
+        <div class="fg"><label>Tags (comma separated)</label><input id="pm-tags" placeholder="logo, branding, identity"/></div>
+        <div class="fg"><label>Status</label><select id="pm-status"><option>Draft</option><option>Published</option><option>Featured</option></select></div>
+      </div>
+      <div class="fg"><label>Live URL</label><input id="pm-url" type="url" placeholder="https://yourproject.com"/></div>
+      <div class="fg">
+        <label>Project Image</label>
+        <div class="upload-zone" id="pm-zone" onclick="document.getElementById('pm-file').click()" ondragover="dragOver(event,'pm-zone')" ondragleave="dragLeave('pm-zone')" ondrop="dropFile(event,'pm-file','pm-file-label','pm-zone')">
+          <div style="font-size:1.8rem;">📁</div>
+          <p>Click or drag &amp; drop to upload</p>
+          <small>Max 5 MB · PNG, JPG, PDF</small>
+        </div>
+        <input type="file" id="pm-file" style="display:none" accept=".png,.jpg,.jpeg,.pdf,.webp" onchange="previewFile(this,'pm-file-label','pm-preview')"/>
+        <div id="pm-file-label"></div>
+        <img id="pm-preview" style="display:none;max-height:100px;margin-top:8px;border-radius:6px;"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeOverlay('ov-project')">Cancel</button>
+      <button class="btn btn-primary" id="pm-save" onclick="saveProject()">💾 Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ BLOG MODAL -->
+<div class="overlay" id="ov-blog">
+  <div class="modal">
+    <div class="modal-head"><h3 id="bm-title">New Blog Post</h3><button class="modal-close" onclick="closeOverlay('ov-blog')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="bm-id"/>
+      <div class="form-row">
+        <div class="fg"><label>Title *</label><input id="bm-name" placeholder="Post title"/></div>
+        <div class="fg"><label>Category</label><select id="bm-cat"><option>Design</option><option>Tools</option><option>Business</option><option>Tutorial</option><option>Inspiration</option><option>Case Study</option></select></div>
+      </div>
+      <div class="fg full"><label>Content</label><textarea id="bm-content" style="min-height:130px;" placeholder="Write your post content here…"></textarea></div>
+      <div class="form-row">
+        <div class="fg"><label>Tags</label><input id="bm-tags" placeholder="design, ux, tools"/></div>
+        <div class="fg"><label>Status</label><select id="bm-status"><option>Draft</option><option>Published</option><option>Featured</option></select></div>
+      </div>
+      <div class="fg">
+        <label>Cover Image</label>
+        <div class="upload-zone" onclick="document.getElementById('bm-file').click()" ondragover="dragOver(event,'bm-zone')" ondragleave="dragLeave('bm-zone')" ondrop="dropFile(event,'bm-file','bm-file-label','bm-zone')">
+          <div style="font-size:1.8rem;">🖼</div>
+          <p>Click or drag &amp; drop cover image</p>
+          <small>Max 5 MB · JPG, PNG, WebP</small>
+        </div>
+        <input type="file" id="bm-file" style="display:none" accept=".png,.jpg,.jpeg,.webp" onchange="previewFile(this,'bm-file-label','bm-preview')"/>
+        <div id="bm-file-label"></div>
+        <img id="bm-preview" style="display:none;max-height:100px;margin-top:8px;border-radius:6px;"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeOverlay('ov-blog')">Cancel</button>
+      <button class="btn btn-primary" id="bm-save" onclick="saveBlog()">💾 Publish Post</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM OVERLAY -->
+<div class="overlay" id="ov-confirm">
+  <div class="confirm-box">
+    <h4 id="conf-title">Confirm Delete</h4>
+    <p id="conf-msg">Are you sure? This cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeOverlay('ov-confirm')">Cancel</button>
+      <button class="btn btn-danger" id="conf-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="tdot ok" id="tdot"></div><span id="tmsg"></span></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   AUTH SYSTEM
+   Credentials stored as hashed values; session kept in sessionStorage
+
+   Passwords are SHA-256 hashed:
+     admin123  → 240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
+     view123   → 656d604dfdba41a262963cce53699bbc56cd7a2c0da1ad5ead45fc49214159d6
+
+   NOTE: In a real app, use a server-side auth system. This is browser-only demo auth.
+═══════════════════════════════════════════════════════════════════ */
+const USERS = {
+  admin:  { passwordHash: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', role: 'admin',  displayName: 'Admin User' },
+  viewer: { passwordHash: '656d604dfdba41a262963cce53699bbc56cd7a2c0da1ad5ead45fc49214159d6', role: 'viewer', displayName: 'Viewer' }
+};
+
+let currentUser = null;
+let loginRole = 'admin';
+
+// Simple SHA-256 via SubtleCrypto
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function selectLoginRole(role, el) {
+  loginRole = role;
+  document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('l-user').value = '';
+  document.getElementById('l-pass').value = '';
+  clearLoginErrors();
+}
+
+function clearLoginErrors() {
+  document.getElementById('l-err').classList.remove('show');
+  document.getElementById('l-user').classList.remove('err');
+  document.getElementById('l-pass').classList.remove('err');
+}
+
+async function doLogin() {
+  clearLoginErrors();
+  const username = document.getElementById('l-user').value.trim();
+  const password  = document.getElementById('l-pass').value;
+  const btn = document.getElementById('login-btn');
+
+  if (!username) {
+    document.getElementById('l-user').classList.add('err');
+    document.getElementById('l-err').textContent = 'Username is required.';
+    document.getElementById('l-err').classList.add('show');
+    return;
+  }
+  if (!password) {
+    document.getElementById('l-pass').classList.add('err');
+    document.getElementById('l-err').textContent = 'Password is required.';
+    document.getElementById('l-err').classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  const hash = await sha256(password);
+  const user = USERS[username.toLowerCase()];
+
+  // Check credentials first
+  if (!user || user.passwordHash !== hash) {
+    document.getElementById('l-user').classList.add('err');
+    document.getElementById('l-pass').classList.add('err');
+    document.getElementById('l-err').textContent = 'Incorrect username or password.';
+    document.getElementById('l-err').classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Sign In →';
+    return;
+  }
+
+  // Role tab must match the account's actual role
+  // Admin tab → only admin accounts; Viewer tab → only viewer accounts
+  if (loginRole !== user.role) {
+    const msg = loginRole === 'admin'
+      ? 'This account does not have admin privileges. Please use the Viewer tab.'
+      : 'This is an admin account. Please use the Admin tab to sign in.';
+    document.getElementById('l-err').textContent = msg;
+    document.getElementById('l-err').classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Sign In →';
+    return;
+  }
+
+  // Success — store session
+  currentUser = { username: username.toLowerCase(), role: user.role, displayName: user.displayName };
+  sessionStorage.setItem('cms_session', JSON.stringify(currentUser));
+
+  btn.textContent = '✓ Access Granted';
+  setTimeout(() => {
+    document.getElementById('login-screen').classList.add('hidden');
+    applyRoleUI();
+    toast(`Welcome back, ${currentUser.displayName} (${currentUser.role}) ✓`);
+  }, 400);
+}
+
+function doLogout() {
+  sessionStorage.removeItem('cms_session');
+  currentUser = null;
+  document.getElementById('l-user').value = '';
+  document.getElementById('l-pass').value = '';
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Sign In →';
+  clearLoginErrors();
+  document.getElementById('login-screen').classList.remove('hidden');
+  toast('Signed out successfully', 'info');
+}
+
+function requireAdmin() {
+  if (!currentUser || currentUser.role !== 'admin') {
+    toast('🔒 Admin access required for this action.', 'err');
+    return false;
+  }
+  return true;
+}
+
+function applyRoleUI() {
+  const isAdmin = currentUser && currentUser.role === 'admin';
+
+  const pill = document.getElementById('role-pill');
+  pill.style.display = 'inline-flex';
+  pill.className = 'role-pill ' + (isAdmin ? 'role-admin' : 'role-viewer');
+  pill.textContent = isAdmin ? '🔑 Admin' : '👁 Viewer';
+
+  document.getElementById('uname').textContent = currentUser.displayName;
+  document.getElementById('u-role-label').textContent = isAdmin ? 'Administrator' : 'Viewer (read-only)';
+  document.getElementById('av').textContent = currentUser.displayName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sb-db-label').textContent = isAdmin ? 'Admin Panel · IndexedDB' : 'Viewer · Read-only';
+
+  document.getElementById('viewer-banner').classList.toggle('hidden', isAdmin);
+
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = isAdmin ? '' : 'none';
+  });
+  document.querySelectorAll('.viewer-only').forEach(el => {
+    el.style.display = isAdmin ? 'none' : '';
+  });
+
+  document.getElementById('btn-export').style.display = isAdmin ? '' : 'none';
+  document.getElementById('btn-add-project').style.display = isAdmin ? '' : 'none';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BACKEND LAYER — IndexedDB Database Engine
+═══════════════════════════════════════════════════════════════════ */
+const DB_NAME = 'PortfolioCMS';
+const DB_VER  = 1;
+let db;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('projects')) {
+        const ps = d.createObjectStore('projects', { keyPath:'id', autoIncrement:true });
+        ps.createIndex('status','status'); ps.createIndex('category','category');
+      }
+      if (!d.objectStoreNames.contains('blog')) {
+        const bs = d.createObjectStore('blog', { keyPath:'id', autoIncrement:true });
+        bs.createIndex('status','status');
+      }
+      if (!d.objectStoreNames.contains('settings')) {
+        d.createObjectStore('settings', { keyPath:'key' });
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+function dbGet(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+function dbPut(store, record) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).put(record);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+function dbDelete(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = () => res(true);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+const ProjectsAPI = {
+  async getAll(filter='all') {
+    let all = await dbGetAll('projects');
+    all.sort((a,b) => b.createdAt - a.createdAt);
+    return filter === 'all' ? all : all.filter(p => p.status === filter);
+  },
+  async get(id)    { return dbGet('projects', id); },
+  async create(data) {
+    const rec = { ...data, views:0, createdAt: Date.now() };
+    const id = await dbPut('projects', rec);
+    return { id, ...rec };
+  },
+  async update(id, data) {
+    const existing = await dbGet('projects', id);
+    if (!existing) throw new Error('Project not found');
+    const updated = { ...existing, ...data, id, updatedAt: Date.now() };
+    await dbPut('projects', updated);
+    return updated;
+  },
+  async delete(id) { return dbDelete('projects', id); },
+  async incrementViews(id) {
+    const p = await dbGet('projects', id);
+    if (p) { p.views = (p.views||0)+1; await dbPut('projects', p); }
+  }
+};
+
+const BlogAPI = {
+  async getAll(filter='all') {
+    let all = await dbGetAll('blog');
+    all.sort((a,b) => b.createdAt - a.createdAt);
+    return filter === 'all' ? all : all.filter(p => p.status === filter);
+  },
+  async get(id)    { return dbGet('blog', id); },
+  async create(data) {
+    const rec = { ...data, views:0, createdAt: Date.now() };
+    const id = await dbPut('blog', rec);
+    return { id, ...rec };
+  },
+  async update(id, data) {
+    const existing = await dbGet('blog', id);
+    if (!existing) throw new Error('Post not found');
+    const updated = { ...existing, ...data, id, updatedAt: Date.now() };
+    await dbPut('blog', updated);
+    return updated;
+  },
+  async delete(id) { return dbDelete('blog', id); }
+};
+
+const SettingsAPI = {
+  async getAll() {
+    const rows = await dbGetAll('settings');
+    const obj = {};
+    rows.forEach(r => obj[r.key] = r.value);
+    return obj;
+  },
+  async set(key, value) { return dbPut('settings', { key, value }); },
+  async setMany(obj) {
+    for (const [k,v] of Object.entries(obj)) await dbPut('settings', { key:k, value:v });
+  },
+  async get(key) {
+    const row = await dbGet('settings', key);
+    return row ? row.value : null;
+  }
+};
+
+const AnalyticsAPI = {
+  async summary() {
+    const [projects, posts] = await Promise.all([ dbGetAll('projects'), dbGetAll('blog') ]);
+    const totalViews = [...projects,...posts].reduce((s,i)=>s+(i.views||0),0);
+    const drafts = [...projects,...posts].filter(i=>i.status==='Draft').length;
+    const published = [...projects,...posts].filter(i=>i.status==='Published'||i.status==='Featured').length;
+    const topProjects = [...projects].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+    const topPosts    = [...posts].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+    const byCategory  = projects.reduce((acc,p)=>{ acc[p.category||'Other']=(acc[p.category||'Other']||0)+1; return acc; },{});
+    return { total: projects.length+posts.length, projects: projects.length, posts: posts.length,
+             totalViews, drafts, published, topProjects, topPosts, byCategory };
+  }
+};
+
+async function seedData() {
+  const existing = await dbGetAll('projects');
+  if (existing.length > 0) return;
+  const projs = [
+    { title:'Brand Identity — Nexus', category:'Branding',    description:'A complete brand identity system.', tags:'logo,identity,branding', status:'Published', views:320, liveUrl:'', imageData:'' },
+    { title:'E-Commerce Redesign',    category:'Web Design',  description:'Full UX overhaul of an e-commerce platform.', tags:'ux,ecommerce,redesign', status:'Draft',     views:120, liveUrl:'', imageData:'' },
+    { title:'Portfolio App UI',       category:'UI/UX',       description:'Mobile-first portfolio app for creatives.', tags:'mobile,app,ui', status:'Featured',  views:580, liveUrl:'', imageData:'' },
+    { title:'SaaS Dashboard',         category:'Web App',     description:'Analytics dashboard built in React.', tags:'react,saas,dashboard', status:'Published', views:210, liveUrl:'', imageData:'' },
+    { title:'Motion Graphics Reel',   category:'Animation',   description:'A showcase reel of motion graphics.', tags:'motion,video', status:'Published', views:450, liveUrl:'', imageData:'' },
+  ];
+  for (const p of projs) await dbPut('projects', { ...p, createdAt: Date.now() - Math.random()*8e6 });
+  const posts = [
+    { title:'Design Systems in 2026',  category:'Design',    content:'Design systems have evolved significantly…', tags:'design,systems', status:'Published', views:1240 },
+    { title:'Why I Switched to Figma', category:'Tools',     content:'After years of Adobe XD, I made the switch…', tags:'figma,tools', status:'Published', views:892 },
+    { title:'Color Theory Deep Dive',  category:'Design',    content:'Understanding color relationships is fundamental…', tags:'color,theory', status:'Draft', views:0 },
+    { title:'Freelance Pricing Guide', category:'Business',  content:'How to price your freelance design work…', tags:'freelance,business', status:'Featured', views:3100 },
+  ];
+  for (const p of posts) await dbPut('blog', { ...p, createdAt: Date.now() - Math.random()*8e6 });
+  await SettingsAPI.setMany({ theme:'Dark Gold', font:'Playfair Display', layout:'Grid (3 col)', owner_name:'John Smith', owner_bio:'Designer & Creative Developer · Available for freelance' });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FRONTEND — Rendering & UI
+═══════════════════════════════════════════════════════════════════ */
+const SECTION_TITLES = { dashboard:'Dashboard', projects:'Projects', blog:'Blog Entries', analytics:'Analytics', theme:'Theme Customization', preview:'Preview Portfolio', api:'API Reference' };
+const THUMB_EMOJI = { Branding:'🎨','Web Design':'🌐','UI/UX':'📱','Web App':'💻',Animation:'🎬',Photography:'📸',Motion:'✨' };
+const THUMB_BG   = { Branding:'#1a1000,#3a2800','Web Design':'#001020,#002040','UI/UX':'#100020,#200040','Web App':'#001a10,#003020',Animation:'#1a0010,#300020',Photography:'#0a0a10,#1a1a30',Motion:'#0d0a20,#1a1440' };
+
+let currentSection = 'dashboard';
+let projFilter = 'all';
+let _prevProjects = [];
+
+function navigate(name) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  document.querySelector(`.nav-item[data-section="${name}"]`)?.classList.add('active');
+  document.getElementById('page-title').textContent = SECTION_TITLES[name] || name;
+  currentSection = name;
+  const loaders = { dashboard:loadDashboard, projects:loadProjects, blog:loadBlog, analytics:loadAnalytics, theme:loadTheme, preview:loadPreview, api:loadApiDocs };
+  loaders[name]?.();
+}
+document.querySelectorAll('.nav-item[data-section]').forEach(el => el.addEventListener('click', ()=>navigate(el.dataset.section)));
+
+async function loadDashboard() {
+  const data = await AnalyticsAPI.summary();
+  document.getElementById('st-proj').textContent  = data.projects;
+  document.getElementById('st-blog').textContent  = data.posts;
+  document.getElementById('st-views').textContent = data.totalViews.toLocaleString();
+  document.getElementById('st-drafts').textContent = data.drafts;
+  document.getElementById('st-proj-sub').textContent  = `${data.projects} total`;
+  document.getElementById('st-blog-sub').textContent  = `${data.posts} total`;
+  document.getElementById('nb-projects').textContent = data.projects;
+  document.getElementById('nb-blog').textContent = data.posts;
+  const projects = await ProjectsAPI.getAll();
+  const tbody = document.getElementById('dash-tbody');
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  if (!projects.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No projects yet — click "+ Add Project" to begin.</td></tr>'; return; }
+  tbody.innerHTML = projects.slice(0,6).map(p=>`
+    <tr>
+      <td><strong>${esc(p.title)}</strong></td>
+      <td>${esc(p.category||'—')}</td>
+      <td><span class="badge ${bc(p.status)}">${esc(p.status)}</span></td>
+      <td>${(p.views||0).toLocaleString()}</td>
+      <td>${fmtDate(p.createdAt)}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" title="Edit" onclick="editProject(${p.id})" ${!isAdmin?'disabled title="Admin only"':''}>✎</button>
+        <button class="icon-btn del" title="Delete" onclick="confirmDelete('project',${p.id})" ${!isAdmin?'disabled title="Admin only"':''}>✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+async function loadProjects() {
+  const rows = await ProjectsAPI.getAll(projFilter);
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  document.getElementById('proj-count').textContent = `(${rows.length})`;
+  const tbody = document.getElementById('proj-tbody');
+  if (!rows.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No projects match this filter.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(p=>`
+    <tr>
+      <td><strong>${esc(p.title)}</strong></td>
+      <td>${esc(p.category||'—')}</td>
+      <td>${(p.tags||'').split(',').filter(Boolean).map(t=>`<span class="badge bf" style="margin-right:3px">${esc(t.trim())}</span>`).join('')}</td>
+      <td><span class="badge ${bc(p.status)}">${esc(p.status)}</span></td>
+      <td>${(p.views||0).toLocaleString()}</td>
+      <td>${fmtDate(p.createdAt)}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" title="${isAdmin?'Edit':'Admin only'}" onclick="editProject(${p.id})" ${!isAdmin?'disabled':''}>✎</button>
+        <button class="icon-btn del" title="${isAdmin?'Delete':'Admin only'}" onclick="confirmDelete('project',${p.id})" ${!isAdmin?'disabled':''}>✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+document.querySelectorAll('#proj-tabs .tab').forEach(t => t.addEventListener('click', function(){
+  document.querySelectorAll('#proj-tabs .tab').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active'); projFilter = this.dataset.filter; loadProjects();
+}));
+
+async function loadBlog() {
+  const rows = await BlogAPI.getAll();
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  const tbody = document.getElementById('blog-tbody');
+  if (!rows.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No blog posts yet.</td></tr>'; return; }
+  tbody.innerHTML = rows.map(p=>`
+    <tr>
+      <td><strong>${esc(p.title)}</strong></td>
+      <td>${esc(p.category||'—')}</td>
+      <td><span class="badge ${bc(p.status)}">${esc(p.status)}</span></td>
+      <td>${(p.views||0).toLocaleString()}</td>
+      <td>${fmtDate(p.createdAt)}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" title="${isAdmin?'Edit':'Admin only'}" onclick="editBlog(${p.id})" ${!isAdmin?'disabled':''}>✎</button>
+        <button class="icon-btn del" title="${isAdmin?'Delete':'Admin only'}" onclick="confirmDelete('blog',${p.id})" ${!isAdmin?'disabled':''}>✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+async function loadAnalytics() {
+  const d = await AnalyticsAPI.summary();
+  document.getElementById('a-total').textContent  = d.total;
+  document.getElementById('a-views').textContent  = d.totalViews.toLocaleString();
+  document.getElementById('a-pub').textContent    = d.published;
+  document.getElementById('a-draft').textContent  = d.drafts;
+  const maxPV = Math.max(...d.topProjects.map(p=>p.views),1);
+  document.getElementById('a-proj-bars').innerHTML = d.topProjects.map(p=>`
+    <div class="bar-row">
+      <div class="bar-label" title="${esc(p.title)}">${esc(p.title)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max((p.views/maxPV)*100,2)}%"></div></div>
+      <div class="bar-val">${p.views}</div>
+    </div>`).join('') || '<p style="color:var(--muted);font-size:.82rem">No data yet.</p>';
+  const maxBV = Math.max(...d.topPosts.map(p=>p.views),1);
+  document.getElementById('a-blog-bars').innerHTML = d.topPosts.map(p=>`
+    <div class="bar-row">
+      <div class="bar-label" title="${esc(p.title)}">${esc(p.title)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max((p.views/maxBV)*100,2)}%;background:linear-gradient(90deg,var(--accent2),var(--success))"></div></div>
+      <div class="bar-val" style="color:var(--accent2)">${p.views}</div>
+    </div>`).join('') || '<p style="color:var(--muted);font-size:.82rem">No data yet.</p>';
+  const colors = ['#e8c97a','#7b9fe8','#7be8b0','#e87b7b','#c87be8','#e8a87b'];
+  document.getElementById('a-cats').innerHTML = Object.entries(d.byCategory).map(([cat,cnt],i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-bottom:7px;">
+      <div style="width:9px;height:9px;border-radius:50%;background:${colors[i%colors.length]}"></div>
+      <span style="flex:1;font-size:.82rem">${esc(cat)}</span>
+      <span style="font-weight:700;color:${colors[i%colors.length]};font-size:.82rem">${cnt}</span>
+    </div>`).join('') || '<p style="color:var(--muted);font-size:.82rem">No data yet.</p>';
+}
+
+async function loadTheme() {
+  const s = await SettingsAPI.getAll();
+  if (s.owner_name) document.getElementById('th-name').value = s.owner_name;
+  if (s.owner_bio)  document.getElementById('th-bio').value  = s.owner_bio;
+  if (s.font)   document.getElementById('th-font').value   = s.font;
+  if (s.layout) document.getElementById('th-layout').value = s.layout;
+  if (s.theme) {
+    document.querySelectorAll('.theme-card').forEach(c=>{
+      const match = c.dataset.theme === s.theme;
+      c.classList.toggle('sel', match);
+      c.querySelector('.tn').textContent = match ? '✦ '+c.dataset.theme : c.dataset.theme;
+    });
+  }
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  ['th-name','th-bio','th-font','th-layout'].forEach(id => {
+    document.getElementById(id).disabled = !isAdmin;
+  });
+  document.querySelectorAll('.theme-card').forEach(c => c.style.pointerEvents = isAdmin ? '' : 'none');
+}
+
+document.querySelectorAll('.theme-card').forEach(c => c.addEventListener('click', function(){
+  if (!requireAdmin()) return;
+  document.querySelectorAll('.theme-card').forEach(x=>{ x.classList.remove('sel'); x.querySelector('.tn').textContent = x.dataset.theme; });
+  this.classList.add('sel');
+  this.querySelector('.tn').textContent = '✦ '+this.dataset.theme;
+}));
+
+async function saveSettings() {
+  if (!requireAdmin()) return;
+  const theme = document.querySelector('.theme-card.sel')?.dataset.theme || 'Dark Gold';
+  await SettingsAPI.setMany({
+    theme, font: document.getElementById('th-font').value,
+    layout: document.getElementById('th-layout').value,
+    owner_name: document.getElementById('th-name').value,
+    owner_bio: document.getElementById('th-bio').value,
+  });
+  toast('Settings saved to IndexedDB ✓');
+}
+async function resetSettings() {
+  if (!requireAdmin()) return;
+  await SettingsAPI.setMany({ theme:'Dark Gold', font:'Playfair Display', layout:'Grid (3 col)', owner_name:'John Smith', owner_bio:'Designer & Creative Developer · Available for freelance' });
+  loadTheme(); toast('Settings reset to defaults');
+}
+
+async function loadPreview() {
+  const [projects, settings] = await Promise.all([ ProjectsAPI.getAll('Published'), SettingsAPI.getAll() ]);
+  _prevProjects = projects;
+  document.getElementById('prev-name').textContent = settings.owner_name || 'Your Name';
+  document.getElementById('prev-bio').textContent  = settings.owner_bio  || 'Designer · Available for freelance';
+  const cats = [...new Set(projects.map(p=>p.category).filter(Boolean))];
+  document.getElementById('prev-cats').innerHTML = `<button class="cat-btn active" data-cat="all">All</button>` +
+    cats.map(c=>`<button class="cat-btn" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+  document.querySelectorAll('#prev-cats .cat-btn').forEach(b => b.addEventListener('click', function(){
+    document.querySelectorAll('#prev-cats .cat-btn').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    const cat = this.dataset.cat;
+    renderPortfolioGrid(cat === 'all' ? _prevProjects : _prevProjects.filter(p=>p.category===cat));
+  }));
+  renderPortfolioGrid(projects);
+}
+function renderPortfolioGrid(projects) {
+  const grid = document.getElementById('prev-grid');
+  if (!projects.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:24px 0">No published projects yet.</div>'; return; }
+  grid.innerHTML = projects.map(p => {
+    const bg = THUMB_BG[p.category] || '0d0f14,1e222c';
+    const em = THUMB_EMOJI[p.category] || '✦';
+    const thumb = p.imageData ? `<img src="${p.imageData}" style="width:100%;height:100%;object-fit:cover"/>` : `<span style="font-size:2.2rem">${em}</span>`;
+    return `<div class="port-card">
+      <div class="port-thumb" style="background:linear-gradient(135deg,#${bg})">${thumb}</div>
+      <div class="port-info">
+        <div class="port-title">${esc(p.title)}</div>
+        <div class="port-cat">${esc(p.category||'')}</div>
+        <div class="port-tags">${(p.tags||'').split(',').filter(Boolean).map(t=>`<span class="ptag">${esc(t.trim())}</span>`).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadApiDocs() {
+  const eps = [
+    {m:'GET',    p:'ProjectsAPI.getAll(filter)',  d:'Returns all projects. filter: "all" | "Published" | "Draft" | "Featured"'},
+    {m:'GET',    p:'ProjectsAPI.get(id)',          d:'Returns a single project by ID.'},
+    {m:'POST',   p:'ProjectsAPI.create(data)',     d:'Creates a new project. Returns { id, ...data }.'},
+    {m:'PUT',    p:'ProjectsAPI.update(id, data)', d:'Updates an existing project by ID.'},
+    {m:'DELETE', p:'ProjectsAPI.delete(id)',       d:'Permanently deletes a project.'},
+    {m:'POST',   p:'ProjectsAPI.incrementViews(id)', d:'Increments view count for a project.'},
+    {m:'GET',    p:'BlogAPI.getAll(filter)',        d:'Returns all blog posts.'},
+    {m:'GET',    p:'BlogAPI.get(id)',               d:'Returns a single blog post by ID.'},
+    {m:'POST',   p:'BlogAPI.create(data)',          d:'Creates a new blog post.'},
+    {m:'PUT',    p:'BlogAPI.update(id, data)',      d:'Updates a blog post.'},
+    {m:'DELETE', p:'BlogAPI.delete(id)',            d:'Deletes a blog post.'},
+    {m:'GET',    p:'SettingsAPI.getAll()',          d:'Returns all key-value settings.'},
+    {m:'PUT',    p:'SettingsAPI.setMany(obj)',      d:'Bulk-updates settings object.'},
+    {m:'GET',    p:'AnalyticsAPI.summary()',        d:'Returns full analytics: views, counts, top content, categories.'},
+  ];
+  const cls = {GET:'m-get',POST:'m-post',PUT:'m-put',DELETE:'m-del'};
+  document.getElementById('api-list').innerHTML = eps.map(e=>`
+    <div class="ep-row">
+      <span class="method ${cls[e.m]}">${e.m}</span>
+      <code class="ep-path">${e.p}</code>
+      <span class="ep-desc">${e.d}</span>
+    </div>`).join('');
+}
+
+// ── Project CRUD (admin-gated) ────────────────────────────────────
+function openProjectModal() {
+  if (!requireAdmin()) return;
+  document.getElementById('pm-id').value = '';
+  document.getElementById('pm-name').value = '';
+  document.getElementById('pm-desc').value = '';
+  document.getElementById('pm-tags').value = '';
+  document.getElementById('pm-url').value  = '';
+  document.getElementById('pm-status').value = 'Draft';
+  document.getElementById('pm-file-label').innerHTML = '';
+  document.getElementById('pm-preview').style.display = 'none';
+  document.getElementById('pm-title').textContent = 'Add New Project';
+  document.getElementById('pm-save').textContent = '💾 Save Project';
+  openOverlay('ov-project');
+}
+async function editProject(id) {
+  if (!requireAdmin()) return;
+  const p = await ProjectsAPI.get(id);
+  if (!p) return;
+  document.getElementById('pm-id').value     = p.id;
+  document.getElementById('pm-name').value   = p.title||'';
+  document.getElementById('pm-cat').value    = p.category||'Branding';
+  document.getElementById('pm-desc').value   = p.description||'';
+  document.getElementById('pm-tags').value   = p.tags||'';
+  document.getElementById('pm-status').value = p.status||'Draft';
+  document.getElementById('pm-url').value    = p.liveUrl||'';
+  if (p.imageData) { const img = document.getElementById('pm-preview'); img.src = p.imageData; img.style.display='block'; }
+  document.getElementById('pm-title').textContent = 'Edit Project';
+  openOverlay('ov-project');
+}
+async function saveProject() {
+  if (!requireAdmin()) return;
+  const title = document.getElementById('pm-name').value.trim();
+  if (!title) { toast('Title is required!', 'err'); return; }
+  const btn = document.getElementById('pm-save'); btn.disabled=true; btn.textContent='Saving…';
+  const id = parseInt(document.getElementById('pm-id').value)||null;
+  const file = document.getElementById('pm-file').files[0];
+  let imageData = '';
+  if (file) imageData = await fileToBase64(file);
+  else if (id) { const ex = await ProjectsAPI.get(id); imageData = ex?.imageData||''; }
+  const data = { title, category: document.getElementById('pm-cat').value, description: document.getElementById('pm-desc').value,
+    tags: document.getElementById('pm-tags').value, status: document.getElementById('pm-status').value,
+    liveUrl: document.getElementById('pm-url').value, imageData };
+  if (id) await ProjectsAPI.update(id, data);
+  else await ProjectsAPI.create(data);
+  btn.disabled=false; btn.textContent='💾 Save Project';
+  closeOverlay('ov-project');
+  toast(id ? 'Project updated ✓' : 'Project created ✓');
+  loadProjects(); loadDashboard();
+}
+
+// ── Blog CRUD (admin-gated) ───────────────────────────────────────
+function openBlogModal() {
+  if (!requireAdmin()) return;
+  ['bm-id','bm-name','bm-content','bm-tags'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('bm-status').value = 'Draft';
+  document.getElementById('bm-file-label').innerHTML='';
+  document.getElementById('bm-preview').style.display='none';
+  document.getElementById('bm-title').textContent='New Blog Post';
+  openOverlay('ov-blog');
+}
+async function editBlog(id) {
+  if (!requireAdmin()) return;
+  const p = await BlogAPI.get(id);
+  if (!p) return;
+  document.getElementById('bm-id').value      = p.id;
+  document.getElementById('bm-name').value    = p.title||'';
+  document.getElementById('bm-cat').value     = p.category||'Design';
+  document.getElementById('bm-content').value = p.content||'';
+  document.getElementById('bm-tags').value    = p.tags||'';
+  document.getElementById('bm-status').value  = p.status||'Draft';
+  document.getElementById('bm-title').textContent = 'Edit Blog Post';
+  openOverlay('ov-blog');
+}
+async function saveBlog() {
+  if (!requireAdmin()) return;
+  const title = document.getElementById('bm-name').value.trim();
+  if (!title) { toast('Title is required!','err'); return; }
+  const btn = document.getElementById('bm-save'); btn.disabled=true; btn.textContent='Saving…';
+  const id = parseInt(document.getElementById('bm-id').value)||null;
+  const file = document.getElementById('bm-file').files[0];
+  let coverData = '';
+  if (file) coverData = await fileToBase64(file);
+  else if (id) { const ex = await BlogAPI.get(id); coverData = ex?.coverData||''; }
+  const data = { title, category: document.getElementById('bm-cat').value,
+    content: document.getElementById('bm-content').value, tags: document.getElementById('bm-tags').value,
+    status: document.getElementById('bm-status').value, coverData };
+  if (id) await BlogAPI.update(id, data);
+  else await BlogAPI.create(data);
+  btn.disabled=false; btn.textContent='💾 Publish Post';
+  closeOverlay('ov-blog');
+  toast(id ? 'Post updated ✓' : 'Post published ✓');
+  loadBlog(); loadDashboard();
+}
+
+// ── Delete (admin-gated + confirm) ───────────────────────────────
+function confirmDelete(type, id) {
+  if (!requireAdmin()) return;
+  document.getElementById('conf-title').textContent = 'Confirm Delete';
+  document.getElementById('conf-msg').textContent   = `Delete this ${type}? This cannot be undone.`;
+  document.getElementById('conf-ok').onclick = async () => {
+    if (type==='project') await ProjectsAPI.delete(id);
+    else await BlogAPI.delete(id);
+    closeOverlay('ov-confirm');
+    toast('Deleted successfully', 'info');
+    if (type==='project') { loadProjects(); loadDashboard(); }
+    else { loadBlog(); loadDashboard(); }
+  };
+  openOverlay('ov-confirm');
+}
+
+// ── Export (admin-gated) ──────────────────────────────────────────
+async function exportData() {
+  if (!requireAdmin()) return;
+  const [projects, blog, settings] = await Promise.all([ dbGetAll('projects'), dbGetAll('blog'), SettingsAPI.getAll() ]);
+  const blob = new Blob([JSON.stringify({ projects, blog, settings }, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `portfolio-cms-export-${new Date().toISOString().slice(0,10)}.json`; a.click();
+  toast('Data exported as JSON ✓');
+}
+
+// ── Overlay / modal helpers ───────────────────────────────────────
+function openOverlay(id)  { document.getElementById(id).classList.add('open'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); }));
+
+// ── File helpers ──────────────────────────────────────────────────
+function fileToBase64(file) {
+  return new Promise(res => { const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsDataURL(file); });
+}
+function previewFile(input, labelId, previewId) {
+  const f = input.files[0]; if (!f) return;
+  document.getElementById(labelId).innerHTML = `<div class="file-chip">📎 ${esc(f.name)}</div>`;
+  if (f.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => { const img = document.getElementById(previewId); img.src=e.target.result; img.style.display='block'; };
+    reader.readAsDataURL(f);
+  }
+}
+function dragOver(e, zoneId)  { e.preventDefault(); document.getElementById(zoneId)?.classList.add('drag'); }
+function dragLeave(zoneId)    { document.getElementById(zoneId)?.classList.remove('drag'); }
+function dropFile(e, inputId, labelId, zoneId) {
+  e.preventDefault(); dragLeave(zoneId);
+  const file = e.dataTransfer.files[0]; if (!file) return;
+  const input = document.getElementById(inputId);
+  const dt = new DataTransfer(); dt.items.add(file); input.files = dt.files;
+  previewFile(input, labelId, inputId.replace('file','preview'));
+}
+
+// ── Utilities ─────────────────────────────────────────────────────
+function esc(s)    { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function bc(s)     { return s==='Published'?'bp':s==='Featured'?'bf':'bd'; }
+function fmtDate(ts){ if(!ts) return '—'; return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+
+let toastTimer;
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  document.getElementById('tmsg').textContent  = msg;
+  document.getElementById('tdot').className    = `tdot ${type}`;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INIT — Check session first, then open DB
+═══════════════════════════════════════════════════════════════════ */
+(async function init() {
+  const savedSession = sessionStorage.getItem('cms_session');
+  if (savedSession) {
+    try {
+      currentUser = JSON.parse(savedSession);
+      document.getElementById('login-screen').classList.add('hidden');
+    } catch(e) {
+      sessionStorage.removeItem('cms_session');
+    }
+  }
+
+  db = await openDB();
+  await seedData();
+
+  if (currentUser) {
+    applyRoleUI();
+    await loadDashboard();
+    toast(`CMS ready — signed in as ${currentUser.role} ✓`, 'ok');
+  }
+})();
+</script>
+</body>
+</html>
